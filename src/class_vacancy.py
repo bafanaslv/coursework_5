@@ -8,7 +8,7 @@ class Vacancy:
     salary_min: int      # мминимальная зарплата
     salary_max: int      # максимальная зарплата
     currency: str        # валюта зарплаты
-    employer_id: int      # идентификатор работодателя
+    employer_id: int     # идентификатор работодателя
     employer: str        # работодатель
     employer_url: str    # ссылка на вакансию
 
@@ -29,30 +29,47 @@ class Vacancy:
         self.employer_url = employer_url
 
     @classmethod
-    def create_objects_vacancy(cls, hh_vacancies, vacancies_list) -> list:
+    def create_objects_vacancy(cls, hh_vacancies, vac_list, employers_list, vacancies_list) -> list:
         """Метод для создания списка объектов вакансий из списка словарей hh_vacancies полученных с HeadHanter."""
         if isinstance(hh_vacancies, dict):
             vac_id = 0
             for vacancy in hh_vacancies["items"]:
-                vac_id = int(vacancy["id"])
-                salary_min, salary_max, currency = cls.salary_valid(vacancy['salary'])
-                responsibility = cls.responsibility_valid(vacancy['snippet'])
-                vacancies_list.append(cls(idv=vacancy["id"],
-                                      name=vacancy["name"],
-                                      area=vacancy['area']['name'],
-                                      requirement=vacancy['snippet']['requirement'],
-                                      responsibility=responsibility,
-                                      salary_min=salary_min,
-                                      salary_max=salary_max,
-                                      currency=currency,
-                                      employer_id=vacancy['employer']['id'],
-                                      employer=vacancy['employer']['name'],
-                                      employer_url=vacancy['alternate_url']))
-            # по мере формирование словаря vacancies_list выявляется максимальных номер id вакансии.
+                if "id" in vacancy['employer']:
+                    if len(employers_list) == 0:
+                        employers_list.append([vacancy['employer']['id'],
+                                               vacancy['employer']['name'], vacancy['alternate_url'], 1])
+                    else:
+                        list_append = False
+                        for emp_list in employers_list:
+                            if emp_list[0] == vacancy['employer']['id']:
+                                emp_list[3] += 1
+                                list_append = True
+                        if list_append is False:
+                            employers_list.append([vacancy['employer']['id'],
+                                                   vacancy['employer']['name'], vacancy['alternate_url'], 1])
+
+                    vac_id = int(vacancy["id"])
+                    salary_min, salary_max, currency = cls.salary_valid(vacancy['salary'])
+                    responsibility = cls.responsibility_valid(vacancy['snippet'])
+                    vacancies_list.append([vacancy["id"], vacancy["name"], vacancy['area']['name'],
+                                          vacancy['snippet']['requirement'], responsibility, salary_min, salary_max,
+                                          currency, vacancy['employer']['id']])
+                    vac_list.append(cls(idv=vacancy["id"],
+                                          name=vacancy["name"],
+                                          area=vacancy['area']['name'],
+                                          requirement=vacancy['snippet']['requirement'],
+                                          responsibility=responsibility,
+                                          salary_min=salary_min,
+                                          salary_max=salary_max,
+                                          currency=currency,
+                                          employer_id=vacancy['employer']['id'],
+                                          employer=vacancy['employer']['name'],
+                                          employer_url=vacancy['alternate_url']))
+            # по мере формирование словаря vac_list выявляется максимальных номер id вакансии.
             # он нам нужен при добаволении новых вакансий для избежания повторения id.
             if vac_id > cls.max_id:
                 cls.max_id = vac_id
-            return vacancies_list
+            return vac_list
         else:
             print('Ошибочный формат файла.')
 

@@ -60,7 +60,8 @@ def users_menu():
                     # vac_object - объект-шаблон вакансия для сравнения зарплат.
                     vac_object = Vacancy("0", "Программист", "Казань", "Все",
                                          "И даже больше", int(sal_min), int(sal_max),
-                                         "руб.", "Facebook", "htts:\\www.facebook.com")
+                                         "руб.", 1, "Facebook",
+                                         "htts:\\www.facebook.com")
                     sel_obj_list = json_manager.vacancies_range_salary(vacancies_objects_list, vac_object, JSON_FILE)
                     json_manager.print_vacancies(sel_obj_list)
                 else:

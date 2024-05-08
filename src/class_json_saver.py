@@ -38,7 +38,7 @@ class JSONSaver(JsonManager):
     @staticmethod
     def load_json_file(json_file):
         """Загрузка json-файла."""
-        with open(json_file, 'r', encoding='utf-8') as file:
+        with open(json_file, 'r', encoding='utf-8', errors='ignore') as file:
             return json.load(file)
 
     def add_vacancies(self, max_id, json_file, my_json_file):
