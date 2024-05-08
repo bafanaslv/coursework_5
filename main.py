@@ -9,17 +9,13 @@ URL_GET = "https://api.hh.ru/vacancies"  # адрес HH для отправки
 
 
 def users_menu():
-    # vacancy_text - текст запроса на Head Hanter
+    # vacancy_text - текст запроса на HeadHanter
     vacancy_text = input(f'Введите поисковый запрос:\n')
     if len(vacancy_text) > 0:
         # параметры запроса
         params = {'text': vacancy_text, 'area': '113', 'currency': 'RUR', 'per_page': 100, 'page': 0}
-        page_quantity = input(f'Введите количество страниц (не более 20):\n')
-        if not page_quantity.isdigit() or int(page_quantity) > 20:
-            print('Неверный ввод - выбрана одна страница!')
-            page_quantity = '1'
-        # create_vacancies_list - функция для формирования списка объектов вакансий vacancies_objects_list
-        vacancies_objects_list = create_vacancies_list(params, int(page_quantity), URL_GET)
+        # create_vacancies_list - функция формирует список объектов вакансий по России vacancies_objects_list
+        vacancies_objects_list = create_vacancies_list(params, 20, URL_GET)
 
         # Создаем объект manager и одновременно получаем список словарей вакансий в новом усеченном формате и
         # сохраняем его а json-файле JSON_FILE
