@@ -1,10 +1,7 @@
 from config import ROOT_DIR
 from src.functions import create_vacancies_list
-from src.class_json_saver import JSONSaver
 from src.class_vacancy import Vacancy
 
-JSON_FILE = ROOT_DIR+'/data/vacancies.json'  # json-файл с вакансиями
-MY_JSON_FILE = ROOT_DIR+'/data/my_vacancies.json'  # json-файл с моими вакасиями для добавления
 URL_GET = "https://api.hh.ru/vacancies"  # адрес HH для отправки запроса
 
 
@@ -18,14 +15,10 @@ def users_menu():
         if not page_quantity.isdigit() or int(page_quantity) > 20:
             print('Неверный ввод - выбрана одна страница!')
             page_quantity = '1'
-        # create_vacancies_list - функция для формирования списка объектов вакансий vacancies_objects_list
-        vacancies_objects_list = create_vacancies_list(params, int(page_quantity), URL_GET)
+        # create_vacancies_list - функция для формирования списка вакансий vacancies_list
+        vacancies_list = create_vacancies_list(params, int(page_quantity), URL_GET)
 
-        # Создаем объект manager и одновременно получаем список словарей вакансий в новом усеченном формате и
-        # сохраняем его а json-файле JSON_FILE
-        json_manager = JSONSaver(vacancies_objects_list, JSON_FILE)
-
-        if len(vacancies_objects_list) > 0:
+        if len(vacancies_list) > 0:
             print("1.Вывести все вакансии\n"
                   "2.Получить топ N вакансий по нижнему уровню зарплаты\n"
                   "3.Получить топ N вакансий по верхнему уровню зарплаты\n"

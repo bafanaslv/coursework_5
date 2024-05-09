@@ -9,7 +9,6 @@ def create_vacancies_list(params, page_quantity, url) -> list:
     """Функция предназначена для работы с API ресурса HeadHater для получения вакансий."""
     hh_api = HeadHunterAPI()  # создание экземпляра поискового класса HeadHanter
     # Получение вакансий с hh.ru в формате JSON.
-    vacancies_dict_list = []     # список словарей вакансий
     vacancies_objects_list = []  # список объектов вакансий
     vacancies_list = []  # список объектов вакансий
     page = 0
@@ -21,7 +20,7 @@ def create_vacancies_list(params, page_quantity, url) -> list:
         if hh_api.get_status_code() == 200:  # если запрос прошел удачно, то идем дальше.
             # Из полученных из json-файла списка словарей hh_vacancies получаем
             # список оъектов вакансий и список словарей вакансий с помощью метода hh_api.get_vacancies.
-            vacancies_objects_list = Vacancy.create_objects_vacancy(hh_vacancies, vacancies_dict_list, employers_list, vacancies_list)
+            vacancies_objects_list = Vacancy.create_objects_vacancy(hh_vacancies, employers_list, vacancies_list)
             page += 1
         else:
             print(f'Ответ: {hh_api.get_status_code()} - не удалось получить доступ к ресурсу HeadHater.')
