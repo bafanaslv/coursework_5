@@ -27,7 +27,7 @@ def users_menu():
             print(len(selected_emp))
             print(len(selected_vac))
         else:
-            print('По запросу ничего не найдено!')
+            print('По запросу ничего не найдено !')
     else:
         print('Запрос не введен - программа прекращает работу !')
 
