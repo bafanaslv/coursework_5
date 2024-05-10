@@ -1,7 +1,14 @@
 from src.functions import read_vacancies_list
 from src.functions import select_vacancies_list
+from src.class_db_manager import DBManager
 
 URL_GET = "https://api.hh.ru/vacancies"  # адрес HH для отправки запроса
+CON_PARAMS_DICT = {
+    "user": "postgres",
+    "password": "12345",
+    "host": "127.0.0.1",
+    "port": "5432"
+}
 
 
 def users_menu():
@@ -24,6 +31,7 @@ def users_menu():
 
         if len(selected_vacancies) > 0:
             selected_emp, selected_vac = select_vacancies_list(selected_employers, selected_vacancies)
+            db_manager = DBManager(CON_PARAMS_DICT)
             print(len(selected_emp))
             print(len(selected_vac))
         else:
