@@ -8,7 +8,7 @@ class Vacancy:
     salary_min: int      # мминимальная зарплата
     salary_max: int      # максимальная зарплата
     currency: str        # валюта зарплаты
-    employer_id: int      # идентификатор работодателя
+    employer_id: int     # идентификатор работодателя
     employer: str        # работодатель
     employer_url: str    # ссылка на вакансию
 
