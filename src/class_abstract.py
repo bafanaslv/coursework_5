@@ -13,3 +13,9 @@ class HHapiABC(ABC):
     @abstractmethod
     def get_vacancies(self, url_get, params):
         pass
+
+
+class DataBaseManager(ABC):
+    @abstractmethod
+    def __init__(self):
+        pass

@@ -4,12 +4,12 @@ from src.class_db_manager import DBManager
 
 URL_GET = "https://api.hh.ru/vacancies"  # адрес HH для отправки запроса
 CONNECTION_PARAMETERS = {
+    "database": "hh_vacancies",
     "user": "postgres",
     "password": "12345",
     "host": "127.0.0.1",
     "port": "5432"
 }
-DATABASE_NAME = "hh_vacansies"
 
 
 def users_menu():
@@ -35,7 +35,8 @@ def users_menu():
             print(len(selected_emp))
             print(len(selected_vac))
             db_manager = DBManager(CONNECTION_PARAMETERS)
-            db_manager.create_database(DATABASE_NAME)
+            db_manager.create_database()
+            db_manager.create_tables(selected_emp)
         else:
             print('По запросу ничего не найдено!')
     else:
