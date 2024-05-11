@@ -1,29 +1,34 @@
 import psycopg2
 from psycopg2 import Error
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 
 class DBManager():
-    def __init__(self, connection_params):
-        pass
+    def __init__(self, connection_parameters):
+        self.user = connection_parameters["user"]
+        self.password = connection_parameters["password"]
+        self.host = connection_parameters["host"]
+        self.port = connection_parameters["port"]
+        self.connection = None
+        self.cursor = None
 
-    def connection(self):
+
+    def create_database(self, database_name):
         try:
             # Подключение к существующей базе данных
-            connection = psycopg2.connect(user="postgres",
-                                          # пароль, который указали при установке PostgreSQL
-                                          password="1111",
-                                          host="127.0.0.1",
-                                          port="5432")
-            connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+            self.connection = psycopg2.connect(user=self.user,
+                                               password=self.password,
+                                               host=self.host,
+                                               port=self.port)
             # Курсор для выполнения операций с базой данных
-            cursor = connection.cursor()
-            sql_create_database = 'create database postgres_db'
-            cursor.execute(sql_create_database)
+            self.cursor = self.connection.cursor()
+            self.connection.autocommit = False
+
+            self.cursor.execute(f'DROP DATABASE IF EXISTS {database_name}')
+            self.cursor.execute(f'CREATE DATABASE {database_name}')
         except (Exception, Error) as error:
             print("Ошибка при работе с PostgreSQL", error)
         finally:
-            if connection:
-                cursor.close()
-                connection.close()
+            if self.connection is True:
+                self.cursor.close()
+                self.connection.close()
                 print("Соединение с PostgreSQL закрыто")
