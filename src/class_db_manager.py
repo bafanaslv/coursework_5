@@ -4,17 +4,20 @@ from src.class_abstract import DataBaseManager
 
 
 class DBManager(DataBaseManager):
-    def __init__(self, connection_parameters):
+    """ Класс предназначен для работы с БД PostgeSQL и содержит методы подключения, создания БД и таблиц.
+    после созднания таблиц выполняется загрузка данных в таблицы из данных полученных с HeadHanter."""
+    def __init__(self, connection_parameters):  # connection_parameters - параметры подключения.
         self.database = connection_parameters["database"]
         self.user = connection_parameters["user"]
         self.password = connection_parameters["password"]
         self.host = connection_parameters["host"]
         self.port = connection_parameters["port"]
-        self.connection = None
-        self.cursor = None
-        self.error = None
+        self.connection = None  # Идентификатор подключения к БД.
+        self.cursor = None      # Курсор для выполнения операций с БД.
+        self.error = None       # Флаг для возврата результатов выполнения запросов к БД.
 
     def create_database(self):
+        """ Данный метод предназначен для подключения к PostgreSQL и пересоздания пустой БД hh_vacancies."""
         self.error = True
         try:
             # Подключение к существующей базе данных
@@ -22,7 +25,6 @@ class DBManager(DataBaseManager):
                                                password=self.password,
                                                host=self.host,
                                                port=self.port)
-            # Курсор для выполнения операций с базой данных
             self.cursor = self.connection.cursor()
             self.connection.autocommit = True
             self.cursor.execute(f"DROP DATABASE IF EXISTS {self.database}")
@@ -39,16 +41,16 @@ class DBManager(DataBaseManager):
         return self.error
 
     def connect_database(self):
+        """ Данный метод предназначен для создания подключения к нашей БД hh_vacancies."""
         self.error = True
         try:
-            # Подключение к созданной базе данных self.database
             self.connection = psycopg2.connect(user=self.user,
                                                password=self.password,
                                                host=self.host,
                                                port=self.port,
                                                database=self.database)
-            # Курсор для выполнения операций с базой данных
             self.cursor = self.connection.cursor()
+            # autocommit - флаг для управления изменениями в БД (True - автоматическое выполнение COMMIT)
             self.connection.autocommit = True
         except (Exception, Error) as error:
             print("Ошибка при работе с PostgreSQL", error)
@@ -56,6 +58,8 @@ class DBManager(DataBaseManager):
         return self.error
 
     def create_tables(self, selected_emp, selected_vac):
+        """ Метод предназначен для пересоздпния таблиц employers и vacancies
+        и загрузки их из списков selected_emp, selected_vac."""
         self.error = True
         try:
             self.cursor.execute("DROP TABLE IF EXISTS vacancies;"
@@ -68,7 +72,7 @@ class DBManager(DataBaseManager):
                                 "currency char(5), employer_id int NOT NULL, "
                                 "FOREIGN KEY (employer_id) REFERENCES employers(employer_id))")
             for data in selected_emp:
-                data_ins = data[0:3]
+                data_ins = data[0:3]  # отсекаем технологическое поле для сортировки списка.
                 self.cursor.execute(
                     "INSERT INTO employers (employer_id, name, alternate_url) "
                     "VALUES (%s, %s, %s) returning *", data_ins)
@@ -77,13 +81,14 @@ class DBManager(DataBaseManager):
                     "INSERT INTO vacancies (vacancy_id, name, area, requirement, responsibility, "
                     "salary_min, salary_max, currency, employer_id)"
                     "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) returning *", data)
-            print(f"Таблицы базаы данных {self.database} employer_id и vacancies созданы и загружены.")
+            print(f"Таблицы базаы данных {self.database} employer_id и vacancies созданы и загружены.\n")
         except (Exception, Error) as error:
             print("Ошибка при работе с PostgreSQL", error)
             self.error = False
         return self.error
 
     def get_companies_and_vacancies_count(self):
+        """ Метод предназначен для получения списка компаний с количеством вакансий. """
         self.error = True
         try:
             self.cursor.execute("SELECT employers.name, COUNT(*) "
@@ -92,57 +97,88 @@ class DBManager(DataBaseManager):
                                 "GROUP BY employers.name")
             selected_rows = self.cursor.fetchall()
             for row in selected_rows:
-                print(f'Компания: {row[0]}, количество вакансий: {row[1]}')
+                print(f"Компания: {row[0]}, количество вакансий: {row[1]}")
         except (Exception, Error) as error:
             print("Ошибка при работе с PostgreSQL", error)
             self.error = False
         return self.error
 
     def get_all_vacancies(self):
+        """ Метод предназначен для получения списка всех вакансий."""
         self.error = True
         try:
-            self.cursor.execute("SELECT employers.name, vacancies.name, salary_min, salary_max, currency, alternate_url"
-                                " FROM vacancies"
-                                " INNER JOIN employers USING(employer_id)"
-                                " ORDER BY employers.name")
+            self.cursor.execute("SELECT employers.name, area, vacancies.name, "
+                                "salary_min, salary_max, currency, alternate_url "
+                                "FROM vacancies "
+                                "INNER JOIN employers USING(employer_id) "
+                                "ORDER BY employers.name")
             selected_rows = self.cursor.fetchall()
+            n = 1
             for row in selected_rows:
-                if row[2] == 0 and row[3] == 0:
-                    print(f'Компания: {row[0]}, вакансия: {row[1]}, зарплата не указана')
-                elif row[2] > 0 and row[3] == 0:
-                    print(f'Компания: {row[0]}, вакансия: {row[1]}, минимальная зарплата: {row[2]} {row[4]}')
-                elif row[2] == 0 and row[3] > 0:
-                    print(f'Компания: {row[0]}, вакансия: {row[1]}, максимальная зарплата: {row[3]} {row[4]}')
+                if row[3] == 0 and row[4] == 0:
+                    print(f"{n}.Компания: {row[0]} {row[1]}, вакансия: {row[2]}, зарплата не указана")
+                elif row[3] > 0 and row[4] == 0:
+                    print(f"{n}.Компания: {row[0]} {row[1]}, вакансия: {row[2]}, зарплата (мин): {row[3]} {row[5]}")
+                elif row[3] == 0 and row[4] > 0:
+                    print(f"{n}.Компания: {row[0]} {row[1]}, вакансия: {row[2]}, зарплата (мах): {row[4]} {row[5]}")
                 else:
-                    print(f'Компания: {row[0]}, вакансия: {row[1]}, зарплата от : {row[2]} до {row[3]} {row[4]}')
-        except (Exception, Error) as error:
-            print("Ошибка при работе с PostgreSQL", error)
-            self.error = False
-        return self.error
-
-    def get_vacancies_with_higher_salary(self):
-        self.error = True
-        try:
-            self.cursor.execute("SELECT AVG((salary_min+salary_max)/CASE WHEN salary_min > 0 AND salary_max > 0 THEN 2 ELSE 1 END) "
-                                "AS avg_salary FROM vacancies WHERE salary_min > 0 OR salary_max > 0 AND currency = 'RUR'")
-            print(f'Средняя зарплата по всем компаниям: {int(self.cursor.fetchone()[0])} руб.')
+                    print(f"{n}.Компания: {row[0]} {row[1]}, вакансия: {row[2]}, зарплата: {row[3]}-{row[4]} {row[5]}")
+                n += 1
         except (Exception, Error) as error:
             print("Ошибка при работе с PostgreSQL", error)
             self.error = False
         return self.error
 
     def get_avg_salary(self):
+        """ Метод предназначен для получения средней зарплаты по всем рублевым вакансиям. В случае, если вакансия
+        содержит и минимальную и максимальную зарплату, то для выполнения запроса применяем среднее значение."""
         self.error = True
         try:
-            self.cursor.execute("SELECT AVG((salary_min+salary_max)/CASE WHEN salary_min > 0 AND salary_max > 0 THEN 2 ELSE 1 END) "
-                                "AS avg_salary FROM vacancies WHERE salary_min > 0 OR salary_max > 0 AND currency = 'RUR'")
-            print(f'Средняя зарплата по всем компаниям: {int(self.cursor.fetchone()[0])} руб.')
+            self.cursor.execute("SELECT AVG((salary_min+salary_max)/"
+                                "CASE WHEN salary_min > 0 AND salary_max > 0 THEN 2 ELSE 1 END) "
+                                "AS avg_salary FROM vacancies "
+                                "WHERE (salary_min > 0 OR salary_max > 0) AND currency = 'RUR'")
+            print(f"Средняя зарплата по всем компаниям: {int(self.cursor.fetchone()[0])} руб.")
+        except (Exception, Error) as error:
+            print("Ошибка при работе с PostgreSQL", error)
+            self.error = False
+        return self.error
+
+    def get_vacancies_with_higher_salary(self):
+        """ Метод предназначен для получения списка всех вакансий, у которых зарплата выше средней по всем рублевым
+        вакансиям. В случае, если вакансия содержит и минимальную и максимальную зарплату,то для выполнения запроса
+        применяем среднее значение."""
+        self.error = True
+        try:
+            self.cursor.execute("SELECT AVG((salary_min+salary_max)/"
+                                "CASE WHEN salary_min > 0 AND salary_max > 0 THEN 2 ELSE 1 END) "
+                                "AS avg_salary FROM vacancies "
+                                "WHERE (salary_min > 0 OR salary_max > 0) AND currency = 'RUR'")
+            print(f'Список вакансий у которых зарплата выше средней: {int(self.cursor.fetchone()[0])} руб.\n')
+            self.cursor.execute("SELECT employers.name, area, vacancies.name, salary_min,salary_max, currency "
+                                "FROM vacancies INNER JOIN employers USING(employer_id) "
+                                "WHERE currency = 'RUR' AND (salary_min+salary_max)/"
+                                "CASE WHEN salary_min > 0 AND salary_max > 0 THEN 2 "
+                                "ELSE 1 END > (SELECT AVG((salary_min+salary_max)/"
+                                "CASE WHEN salary_min > 0 AND salary_max > 0 THEN 2 "
+                                "ELSE 1 END) AS avg_salary FROM vacancies WHERE salary_min > 0 OR salary_max > 0)")
+            selected_rows = self.cursor.fetchall()
+            n = 1
+            for row in selected_rows:
+                if row[3] > 0 and row[4] == 0:
+                    print(f"{n}.Компания: {row[0]} {row[1]}, вакансия: {row[2]}, зарплата (мин): {row[3]} руб.")
+                elif row[3] == 0 and row[4] > 0:
+                    print(f"{n}.Компания: {row[0]} {row[1]}, вакансия: {row[2]}, зарплата (мах): {row[4]} руб.")
+                else:
+                    print(f"{n}.Компания: {row[0]} {row[1]}, вакансия: {row[2]}, зарплата: {row[3]} - {row[4]} руб.")
+                n += 1
         except (Exception, Error) as error:
             print("Ошибка при работе с PostgreSQL", error)
             self.error = False
         return self.error
 
     def get_vacancies_with_keyword(self, keyword):
+        """ Метод предназначен для получения всех вакансий, в названии которых содержатся переданные в метод слова."""
         self.error = True
         try:
             self.cursor.execute(f"SELECT employers.name, vacancies.name, area "
@@ -152,8 +188,10 @@ class DBManager(DataBaseManager):
                                 "ORDER BY employers.name")
             selected_rows = self.cursor.fetchall()
             if len(selected_rows) > 0:
+                n = 1
                 for row in selected_rows:
-                    print(f'Компания: {row[0]}, вакансия: {row[1]}, город: {row[2]}')
+                    print(f"{n}.Компания: {row[0]}, вакансия: {row[1]}, город: {row[2]}")
+                    n += 1
             else:
                 print(f"Ни одна вакансия не содержит слово(строку) '{keyword}'.")
         except (Exception, Error) as error:
@@ -162,6 +200,7 @@ class DBManager(DataBaseManager):
         return self.error
 
     def close_database(self):
+        """ Метод предназначен для закрытия подключения к БД."""
         self.cursor.close()
         self.connection.close()
         print("Соединение с PostgreSQL закрыто\n")

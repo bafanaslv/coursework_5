@@ -1,9 +1,12 @@
+# Модуль запуска программы для ввода параметров подключения к БД, ввода данных для поиска на HeadHanter
+# и вывода меню запросов к БД
+
 from src.functions import read_vacancies_list
 from src.functions import select_vacancies_list
 from src.class_db_manager import DBManager
 
 URL_GET = "https://api.hh.ru/vacancies"  # адрес HH для отправки запроса
-CONNECTION_PARAMETERS = {
+CONNECTION_PARAMETERS = {  # параметры подключения к БД PostgeSQL
     "database": "hh_vacancies",
     "user": "postgres",
     "password": "12345",
@@ -31,16 +34,23 @@ def users_menu():
         selected_employers, selected_vacancies = read_vacancies_list(params, int(page_quantity), text_region, URL_GET)
 
         if len(selected_vacancies) > 0:
+            # функция select_vacancies_list предназначена для получения списка 10-ти организаций с наибольшим
+            # количеством вакансий и списка самих вакансий по этим организациям.
             selected_emp, selected_vac = select_vacancies_list(selected_employers, selected_vacancies)
-            db_manager = DBManager(CONNECTION_PARAMETERS)
-            if db_manager.create_database() and db_manager.connect_database() and db_manager.create_tables(selected_emp, selected_vac):
+            db_manager = DBManager(CONNECTION_PARAMETERS) # создание класса для работы с БД PostgreSQL.
+            # create_database - метод для создания экземпляра БД hh_vacancies.
+            # connect_database - метод для подключения к БД hh_vacancies.
+            # create_tables - метод для создания таблиц БД (employers - работодатели, vacancies - вакансии).
+            if (db_manager.create_database() and db_manager.connect_database() and
+                    db_manager.create_tables(selected_emp, selected_vac)):
                 print("1.Получить список компаний с количеством вакансий\n"
-                      "2.получить список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на ваканси\n"
-                      "3.Получить среднюю зарплату по вакансиямт\n"
+                      "2.получить список всех вакансий с указанием названия компании, "
+                      "названия вакансии и зарплаты и ссылки на ваканси\n"
+                      "3.Получить среднюю зарплату по вакансиям\n"
                       "4.Получить список всех вакансий, у которых зарплата выше средней по всем вакансиям\n"
                       "5.Получить список всех вакансий, в названии которых содержатся переданные в метод слова\n"
                       "  Выход - любой символ или <Enter>")
-                answer = input()  # ввод номера опции выбора
+                answer = input("Ввеедите номер запроса:")  # ввод номера пункта меню
                 if answer == '1':
                     db_manager.get_companies_and_vacancies_count()
                 elif answer == '2':
