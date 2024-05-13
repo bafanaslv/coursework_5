@@ -120,14 +120,46 @@ class DBManager(DataBaseManager):
             self.error = False
         return self.error
 
-    def get_avg_salary(self):
-        pass
-
     def get_vacancies_with_higher_salary(self):
-        pass
+        self.error = True
+        try:
+            self.cursor.execute("SELECT AVG((salary_min+salary_max)/CASE WHEN salary_min > 0 AND salary_max > 0 THEN 2 ELSE 1 END) "
+                                "AS avg_salary FROM vacancies WHERE salary_min > 0 OR salary_max > 0 AND currency = 'RUR'")
+            print(f'Средняя зарплата по всем компаниям: {int(self.cursor.fetchone()[0])} руб.')
+        except (Exception, Error) as error:
+            print("Ошибка при работе с PostgreSQL", error)
+            self.error = False
+        return self.error
 
-    def get_vacancies_with_keyword(self):
-        pass
+    def get_avg_salary(self):
+        self.error = True
+        try:
+            self.cursor.execute("SELECT AVG((salary_min+salary_max)/CASE WHEN salary_min > 0 AND salary_max > 0 THEN 2 ELSE 1 END) "
+                                "AS avg_salary FROM vacancies WHERE salary_min > 0 OR salary_max > 0 AND currency = 'RUR'")
+            print(f'Средняя зарплата по всем компаниям: {int(self.cursor.fetchone()[0])} руб.')
+        except (Exception, Error) as error:
+            print("Ошибка при работе с PostgreSQL", error)
+            self.error = False
+        return self.error
+
+    def get_vacancies_with_keyword(self, keyword):
+        self.error = True
+        try:
+            self.cursor.execute(f"SELECT employers.name, vacancies.name, area "
+                                "FROM vacancies "
+                                "INNER JOIN employers USING(employer_id) "
+                                f"WHERE lower(vacancies.name) LIKE '%{keyword}%' "
+                                "ORDER BY employers.name")
+            selected_rows = self.cursor.fetchall()
+            if len(selected_rows) > 0:
+                for row in selected_rows:
+                    print(f'Компания: {row[0]}, вакансия: {row[1]}, город: {row[2]}')
+            else:
+                print(f"Ни одна вакансия не содержит слово(строку) '{keyword}'.")
+        except (Exception, Error) as error:
+            print("Ошибка при работе с PostgreSQL", error)
+            self.error = False
+        return self.error
 
     def close_database(self):
         self.cursor.close()
