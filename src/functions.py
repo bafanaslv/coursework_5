@@ -30,7 +30,8 @@ def read_vacancies_list(params, page_quantity, text_region, url) -> (list, list)
 def create_vacancy_lists(hh_vacancies, employers_list, vacancies_list, text_region) -> (list, list):
     """Функция для создания списка вакансий и списка работодателей из списка словарей hh_vacancies,
      полученных с HeadHanter. В спиской работодателей попадают попадают только уникальные,то есть отстуствуют
-     повторы. Параллельно при заполнении списка работодателей подсчитывется количество вакансий каждого работодателя."""
+     повторы. Параллельно при заполнении списка работодателей подсчитывется количество вакансий каждого работодателя.
+     Это поле нужно для сортировки, чтобы затем выбрать 10 работодателей с наибольшим количеством вакансий."""
     if isinstance(hh_vacancies, dict):
         for vacancy in hh_vacancies["items"]:
             # пропускаем если отсутствет идентификатор работодателя
@@ -43,7 +44,7 @@ def create_vacancy_lists(hh_vacancies, employers_list, vacancies_list, text_regi
                 employers_list.append([vacancy['employer']['id'],
                                        vacancy['employer']['name'], vacancy['alternate_url'], 1])
             else:
-                # если идентификатор работодателя уже есть в списке, то пропускаем
+                # если идентификатор работодателя уже есть в списке, то пропускаем.
                 list_append = False
                 for emp_list in employers_list:
                     if emp_list[0] == vacancy['employer']['id']:
@@ -82,7 +83,7 @@ def responsibility_valid(responsibility_item) -> str:
 
 
 def salary_valid(salary_item) -> (int, int, str):
-    """Валидация зарплаты и валюты."""
+    """Валидация зарплаты."""
     if salary_item is None:
         salary_min = 0
         salary_max = 0
@@ -101,10 +102,7 @@ def salary_valid(salary_item) -> (int, int, str):
         if not salary_item['currency']:
             currency = ''
         else:
-            if salary_item['currency'] == 'RUR':
-                currency = 'руб.'
-            else:
-                currency = salary_item['currency']
+            currency = salary_item['currency']
     return salary_min, salary_max, currency
 
 
