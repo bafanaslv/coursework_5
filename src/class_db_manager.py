@@ -89,14 +89,45 @@ class DBManager(DataBaseManager):
             self.cursor.execute("SELECT employers.name, COUNT(*) "
                                 "FROM vacancies "
                                 "INNER JOIN employers USING(employer_id) "
-                                "GROUP BY employers.name ")
-            selected = self.cursor.fetchall()
-            for sel in selected:
-                print(f'Компания: {sel[0]}, количество вакансий: {sel[1]}')
+                                "GROUP BY employers.name")
+            selected_rows = self.cursor.fetchall()
+            for row in selected_rows:
+                print(f'Компания: {row[0]}, количество вакансий: {row[1]}')
         except (Exception, Error) as error:
             print("Ошибка при работе с PostgreSQL", error)
             self.error = False
         return self.error
+
+    def get_all_vacancies(self):
+        self.error = True
+        try:
+            self.cursor.execute("SELECT employers.name, vacancies.name, salary_min, salary_max, currency, alternate_url"
+                                " FROM vacancies"
+                                " INNER JOIN employers USING(employer_id)"
+                                " ORDER BY employers.name")
+            selected_rows = self.cursor.fetchall()
+            for row in selected_rows:
+                if row[2] == 0 and row[3] == 0:
+                    print(f'Компания: {row[0]}, вакансия: {row[1]}, зарплата не указана')
+                elif row[2] > 0 and row[3] == 0:
+                    print(f'Компания: {row[0]}, вакансия: {row[1]}, минимальная зарплата: {row[2]} {row[4]}')
+                elif row[2] == 0 and row[3] > 0:
+                    print(f'Компания: {row[0]}, вакансия: {row[1]}, максимальная зарплата: {row[3]} {row[4]}')
+                else:
+                    print(f'Компания: {row[0]}, вакансия: {row[1]}, зарплата от : {row[2]} до {row[3]} {row[4]}')
+        except (Exception, Error) as error:
+            print("Ошибка при работе с PostgreSQL", error)
+            self.error = False
+        return self.error
+
+    def get_avg_salary(self):
+        pass
+
+    def get_vacancies_with_higher_salary(self):
+        pass
+
+    def get_vacancies_with_keyword(self):
+        pass
 
     def close_database(self):
         self.cursor.close()

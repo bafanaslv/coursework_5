@@ -101,10 +101,7 @@ def salary_valid(salary_item) -> (int, int, str):
         if not salary_item['currency']:
             currency = ''
         else:
-            if salary_item['currency'] == 'RUR':
-                currency = 'руб.'
-            else:
-                currency = salary_item['currency']
+            currency = salary_item['currency']
     return salary_min, salary_max, currency
 
 

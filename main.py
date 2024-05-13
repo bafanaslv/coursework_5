@@ -33,22 +33,24 @@ def users_menu():
         if len(selected_vacancies) > 0:
             selected_emp, selected_vac = select_vacancies_list(selected_employers, selected_vacancies)
             db_manager = DBManager(CONNECTION_PARAMETERS)
-            if db_manager.create_database():
-                if db_manager.connect_database():
-                    if db_manager.create_tables(selected_emp, selected_vac):
-                        print("1.Получить список компаний с количеством вакансий\n"
-                              "2.получить список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на ваканси\n"
-                              "3.Получить среднюю зарплату по вакансиям\n"
-                              "4.Получить список всех вакансий, у которых зарплата выше средней по всем вакансиям\n"
-                              "5.Получить список всех вакансий, в названии которых содержатся переданные в метод слова\n"
-                              "  Выход - любой символ или <Enter>")
-                        answer = input()  # ввод номера опции выбора
-                        if answer not in ['1', '2', '3', '4', '5']:
-                            print('Не выбрана ни одна опция !')
-                            db_manager.close_database()
-                        elif answer == '1':
-                            # Вывод всех найденных вакансий.
-                            db_manager.get_companies_and_vacancies_count()
+            if db_manager.create_database() and db_manager.connect_database() and db_manager.create_tables(selected_emp, selected_vac):
+                print("1.Получить список компаний с количеством вакансий\n"
+                      "2.получить список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на ваканси\n"
+                      "3.Получить среднюю зарплату по вакансиям\n"
+                      "4.Получить список всех вакансий, у которых зарплата выше средней по всем вакансиям\n"
+                      "5.Получить список всех вакансий, в названии которых содержатся переданные в метод слова\n"
+                      "  Выход - любой символ или <Enter>")
+                answer = input()  # ввод номера опции выбора
+#                        if answer not in ['1', '2', '3', '4', '5']:
+                if answer == '1':
+                    # Вывод всех найденных вакансий.
+                    db_manager.get_companies_and_vacancies_count()
+                elif answer == '2':
+                    # Вывод всех найденных вакансий.
+                    db_manager.get_all_vacancies()
+                else:
+                    print('Не выбрана ни одна опция !')
+                    db_manager.close_database()
         else:
             print('По запросу ничего не найдено!')
     else:
