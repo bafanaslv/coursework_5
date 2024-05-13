@@ -78,9 +78,9 @@ class DBManager(DataBaseManager):
                     "VALUES (%s, %s, %s) returning *", data_ins)
             for data in selected_vac:
                 # избавляемся от ненужных символов в столбцах name, requirement, responsibility.
-                data[1] = data[1].replace("<highlighttext>","").replace("</highlighttext>","")
-                data[3] = data[3].replace("<highlighttext>","").replace("</highlighttext>","")
-                data[4] = data[4].replace("<highlighttext>","").replace("</highlighttext>","")
+                data[1] = data[1].replace("<highlighttext>", "").replace("</highlighttext>", "")
+                data[3] = data[3].replace("<highlighttext>", "").replace("</highlighttext>", "")
+                data[4] = data[4].replace("<highlighttext>", "").replace("</highlighttext>", "")
                 self.cursor.execute(
                     "INSERT INTO vacancies (vacancy_id, name, area, requirement, responsibility, "
                     "salary_min, salary_max, currency, employer_id)"

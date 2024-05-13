@@ -37,7 +37,7 @@ def users_menu():
             # функция select_vacancies_list предназначена для получения списка 10-ти организаций с наибольшим
             # количеством вакансий и списка самих вакансий по этим организациям.
             selected_emp, selected_vac = select_vacancies_list(selected_employers, selected_vacancies)
-            db_manager = DBManager(CONNECTION_PARAMETERS) # создание класса для работы с БД PostgreSQL.
+            db_manager = DBManager(CONNECTION_PARAMETERS)  # создание класса для работы с БД PostgreSQL.
             # create_database - метод для создания экземпляра БД hh_vacancies.
             # connect_database - метод для подключения к БД hh_vacancies.
             # create_tables - метод для создания таблиц БД (employers - работодатели, vacancies - вакансии).
