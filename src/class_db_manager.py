@@ -16,7 +16,7 @@ class DBManager(DataBaseManager):
         self.cursor = None      # Курсор для выполнения операций с БД.
         self.error = None       # Флаг для возврата результатов выполнения запросов к БД.
 
-    def create_database(self):
+    def create_database(self) -> bool:
         """ Данный метод предназначен для подключения к PostgreSQL и пересоздания пустой БД hh_vacancies."""
         self.error = True
         try:
@@ -40,7 +40,7 @@ class DBManager(DataBaseManager):
                 print("Соединение с PostgreSQL закрыто\n")
         return self.error
 
-    def connect_database(self):
+    def connect_database(self) -> bool:
         """ Данный метод предназначен для создания подключения к нашей БД hh_vacancies."""
         self.error = True
         try:
@@ -57,7 +57,7 @@ class DBManager(DataBaseManager):
             self.error = False
         return self.error
 
-    def create_tables(self, selected_emp, selected_vac):
+    def create_tables(self, selected_emp, selected_vac) -> bool:
         """ Метод предназначен для пересоздпния таблиц employers и vacancies
         и загрузки их из списков selected_emp, selected_vac."""
         self.error = True
@@ -78,9 +78,9 @@ class DBManager(DataBaseManager):
                     "VALUES (%s, %s, %s) returning *", data_ins)
             for data in selected_vac:
                 # избавляемся от ненужных символов в столбцах name, requirement, responsibility.
-                data[1] = data[1].replace("<highlighttext>","").replace("</highlighttext>","")
-                data[3] = data[3].replace("<highlighttext>","").replace("</highlighttext>","")
-                data[4] = data[4].replace("<highlighttext>","").replace("</highlighttext>","")
+                data[1] = data[1].replace("<highlighttext>", "").replace("</highlighttext>", "")
+                data[3] = data[3].replace("<highlighttext>", "").replace("</highlighttext>", "")
+                data[4] = data[4].replace("<highlighttext>", "").replace("</highlighttext>", "")
                 self.cursor.execute(
                     "INSERT INTO vacancies (vacancy_id, name, area, requirement, responsibility, "
                     "salary_min, salary_max, currency, employer_id)"
@@ -91,7 +91,7 @@ class DBManager(DataBaseManager):
             self.error = False
         return self.error
 
-    def get_companies_and_vacancies_count(self):
+    def get_companies_and_vacancies_count(self) -> bool:
         """ Метод предназначен для получения списка компаний с количеством вакансий. """
         self.error = True
         try:
@@ -135,7 +135,7 @@ class DBManager(DataBaseManager):
             self.error = False
         return self.error
 
-    def get_avg_salary(self):
+    def get_avg_salary(self) -> bool:
         """ Метод предназначен для получения средней зарплаты по всем рублевым вакансиям. В случае, если вакансия
         содержит и минимальную и максимальную зарплату, то для выполнения запроса применяем среднее значение."""
         self.error = True
@@ -183,7 +183,7 @@ class DBManager(DataBaseManager):
             self.error = False
         return self.error
 
-    def get_vacancies_with_keyword(self, keyword_str):
+    def get_vacancies_with_keyword(self, keyword_str) -> bool:
         """ Метод предназначен для получения всех вакансий, в названии которых содержатся переданные в метод слова."""
         self.error = True
         try:
