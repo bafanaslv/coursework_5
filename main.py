@@ -49,7 +49,7 @@ def users_menu():
                       "3.Получить среднюю зарплату по вакансиям\n"
                       "4.Получить список всех вакансий, у которых зарплата выше средней по всем вакансиям\n"
                       "5.Получить список всех вакансий, в названии которых содержатся переданные в метод слова\n"
-                      "  Выход - любой символ или <Enter>")
+                      "  Выход - любой символ или <Enter>\n")
                 answer = input("Ввеедите номер запроса:")  # ввод номера пункта меню
                 if answer == '1':
                     db_manager.get_companies_and_vacancies_count()
@@ -60,11 +60,16 @@ def users_menu():
                 elif answer == '4':
                     db_manager.get_vacancies_with_higher_salary()
                 elif answer == '5':
-                    keyword = input("Введите ключевое слово в названии вакансии:\n")
+                    keyword = input("Введите ключевые слова в названии вакансии через запятую:\n")
                     if len(keyword) > 0:
-                        db_manager.get_vacancies_with_keyword(keyword)
+                        keywords_list = keyword.split(",")
+                        words_list = []
+                        for word in keywords_list:
+                            words_list.append(f'%{word.strip()}%')
+                        keywords_str = f"{words_list}"
+                        db_manager.get_vacancies_with_keyword(keywords_str)
                     else:
-                        print("Ключевое слово не введено - программа завершает работу !")
+                        print("Ключевые слова не введены - программа завершает работу !")
                 else:
                     print('Не выбрана ни одна опция !')
                 db_manager.close_database()

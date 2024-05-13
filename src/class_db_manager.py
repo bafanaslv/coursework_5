@@ -77,6 +77,10 @@ class DBManager(DataBaseManager):
                     "INSERT INTO employers (employer_id, name, alternate_url) "
                     "VALUES (%s, %s, %s) returning *", data_ins)
             for data in selected_vac:
+                # избавляемся от ненужных символов в столбцах name, requirement, responsibility.
+                data[1] = data[1].replace("<highlighttext>","").replace("</highlighttext>","")
+                data[3] = data[3].replace("<highlighttext>","").replace("</highlighttext>","")
+                data[4] = data[4].replace("<highlighttext>","").replace("</highlighttext>","")
                 self.cursor.execute(
                     "INSERT INTO vacancies (vacancy_id, name, area, requirement, responsibility, "
                     "salary_min, salary_max, currency, employer_id)"
@@ -96,8 +100,10 @@ class DBManager(DataBaseManager):
                                 "INNER JOIN employers USING(employer_id) "
                                 "GROUP BY employers.name")
             selected_rows = self.cursor.fetchall()
+            n = 1
             for row in selected_rows:
-                print(f"Компания: {row[0]}, количество вакансий: {row[1]}")
+                print(f"{n}.Компания: {row[0]}, количество вакансий: {row[1]}")
+                n += 1
         except (Exception, Error) as error:
             print("Ошибка при работе с PostgreSQL", error)
             self.error = False
@@ -177,23 +183,24 @@ class DBManager(DataBaseManager):
             self.error = False
         return self.error
 
-    def get_vacancies_with_keyword(self, keyword):
+    def get_vacancies_with_keyword(self, keyword_str):
         """ Метод предназначен для получения всех вакансий, в названии которых содержатся переданные в метод слова."""
         self.error = True
         try:
             self.cursor.execute(f"SELECT employers.name, vacancies.name, area "
                                 "FROM vacancies "
                                 "INNER JOIN employers USING(employer_id) "
-                                f"WHERE lower(vacancies.name) LIKE '%{keyword}%' "
+                                f"WHERE lower(vacancies.name) LIKE ANY (ARRAY{keyword_str})"
                                 "ORDER BY employers.name")
             selected_rows = self.cursor.fetchall()
             if len(selected_rows) > 0:
                 n = 1
                 for row in selected_rows:
-                    print(f"{n}.Компания: {row[0]}, вакансия: {row[1]}, город: {row[2]}")
+                    print(f"{n}.Компания: {row[0]}, вакансия: {row[1]}, г.{row[2]}")
                     n += 1
             else:
-                print(f"Ни одна вакансия не содержит слово(строку) '{keyword}'.")
+                key_words = keyword_str.replace("%', '%", "', '").replace("['%", "").replace("%']", "")
+                print(f"Ни одна вакансия не содержит слова(строки) '{key_words}'.")
         except (Exception, Error) as error:
             print("Ошибка при работе с PostgreSQL", error)
             self.error = False
