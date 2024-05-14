@@ -60,14 +60,9 @@ def users_menu():
                 elif answer == '4':
                     db_manager.get_vacancies_with_higher_salary()
                 elif answer == '5':
-                    keyword = input("Введите ключевые слова в названии вакансии через запятую:\n")
-                    if len(keyword) > 0:
-                        keywords_list = keyword.split(",")
-                        words_list = []
-                        for word in keywords_list:
-                            words_list.append(f'%{word.strip()}%')
-                        keywords_str = f"{words_list}"
-                        db_manager.get_vacancies_with_keyword(keywords_str)
+                    keywords = input("Введите ключевые слова в названии вакансии через запятую:\n")
+                    if len(keywords) > 0:
+                        db_manager.get_vacancies_with_keyword(keywords)
                     else:
                         print("Ключевые слова не введены - программа завершает работу !")
                 else:
