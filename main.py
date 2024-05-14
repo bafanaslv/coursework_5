@@ -30,7 +30,7 @@ def users_menu():
             print('Регион не введен - поиск будет осуществляться по всей России.')
 
         # read_vacancies_list - функция для формирования
-        # списка работодателей selected_employers и вакансий vacancies_list
+        # списка работодателей selected_employers и вакансий selected_vacancies
         selected_employers, selected_vacancies = read_vacancies_list(params, int(page_quantity), text_region, URL_GET)
 
         if len(selected_vacancies) > 0:
