@@ -185,14 +185,19 @@ class DBManager(DataBaseManager):
             self.error = False
         return self.error
 
-    def get_vacancies_with_keyword(self, keyword_str) -> bool:
+    def get_vacancies_with_keyword(self, keywords) -> bool:
         """ Метод предназначен для получения всех вакансий, в названии которых содержатся переданные в метод слова."""
+        keywords_list = keywords.split(",")
+        words_list = []
+        for word in keywords_list:
+            words_list.append(f'%{word.strip()}%')
+        keywords_str = f"{words_list}"
         self.error = True
         try:
             self.cursor.execute(f"SELECT employers.name, vacancies.name, area "
                                 "FROM vacancies "
                                 "INNER JOIN employers USING(employer_id) "
-                                f"WHERE lower(vacancies.name) LIKE ANY (ARRAY{keyword_str})"
+                                f"WHERE lower(vacancies.name) LIKE ANY (ARRAY{keywords_str})"
                                 "ORDER BY employers.name")
             selected_rows = self.cursor.fetchall()
             if len(selected_rows) > 0:
@@ -201,8 +206,7 @@ class DBManager(DataBaseManager):
                     print(f"{n}.Компания: {row[0]}, вакансия: {row[1]}, г.{row[2]}")
                     n += 1
             else:
-                key_words = keyword_str.replace("%', '%", "', '").replace("['%", "").replace("%']", "")
-                print(f"Ни одна вакансия не содержит слова(строки) '{key_words}'.")
+                print(f"Ни одна вакансия не содержит слова(строки) '{keywords}'.")
         except (Exception, Error) as error:
             print("Ошибка при работе с PostgreSQL", error)
             self.error = False
