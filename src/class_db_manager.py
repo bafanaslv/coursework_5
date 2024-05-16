@@ -187,6 +187,7 @@ class DBManager(DataBaseManager):
 
     def get_vacancies_with_keyword(self, keywords) -> bool:
         """ Метод предназначен для получения всех вакансий, в названии которых содержатся переданные в метод слова."""
+        # приведение ввденных слов(строк символов) keywords = "xxx, yyy" к виду keywords_str = "['%xxx%', '%yyy%']"
         keywords_list = keywords.split(",")
         words_list = []
         for word in keywords_list:
