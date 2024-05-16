@@ -4,15 +4,11 @@
 from src.functions import read_vacancies_list
 from src.functions import select_vacancies_list
 from src.class_db_manager import DBManager
+from config import ROOT_DIR
+from src.functions import connector
 
+CONNECTION_FILE = ROOT_DIR+'/database.ini'  # конфигурационный файл подключения к БД
 URL_GET = "https://api.hh.ru/vacancies"  # адрес HH для отправки запроса
-CONNECTION_PARAMETERS = {  # параметры подключения к БД PostgeSQL
-    "database": "hh_vacancies",
-    "user": "postgres",
-    "password": "12345",
-    "host": "127.0.0.1",
-    "port": "5432"
-}
 
 
 def users_menu():
@@ -37,6 +33,8 @@ def users_menu():
             # функция select_vacancies_list предназначена для получения списка 10-ти организаций с наибольшим
             # количеством вакансий и списка самих вакансий по этим организациям.
             selected_emp, selected_vac = select_vacancies_list(selected_employers, selected_vacancies)
+            connection = connector(CONNECTION_FILE)
+
             db_manager = DBManager(CONNECTION_PARAMETERS)  # создание класса для работы с БД PostgreSQL.
             # create_database - метод для создания экземпляра БД hh_vacancies.
             # connect_database - метод для подключения к БД hh_vacancies.
