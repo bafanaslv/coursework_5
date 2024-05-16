@@ -123,8 +123,6 @@ def select_vacancies_list(employers_list, vacancies_list):
     """Функция сортирует список работодателей по убыванию максимальной заплаты и берет десять первых и формирует
     новый список selected_employers_list. Далее из списка ваканасий создается новый список вакансий
     selected_employers_list по соответствию ID вакансий в двух списках vac[8] == sel[0]."""
-    selected_vacancies_list = []
-    selected_employers_list = sorted(employers_list, key=lambda x: x[3], reverse=True)[0:10]
     for vac in vacancies_list:
         for sel in selected_employers_list:
             if vac[8] == sel[0]:

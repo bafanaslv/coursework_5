@@ -31,11 +31,12 @@ def users_menu():
         selected_employers, selected_vacancies = read_vacancies_list(params, int(page_quantity), URL_GET)
 
         if len(selected_vacancies) > 0:
-            # функция select_vacancies_list предназначена для получения списка 10-ти организаций с наибольшим
-            # количеством вакансий и списка самих вакансий по этим организациям.
-            selected_emp, selected_vac = select_vacancies_list(selected_employers, selected_vacancies)
+            # функция select_employers_list предназначена для получения списка 10-ти организаций с наибольшей зарплатой.
             # функция connector считывает файл с параметрами подключения к БД возвращает данные в виде словаря.
+            selected_emp = sorted(selected_employers, key=lambda x: x[3], reverse=True)[0:10]
             save_list_file(selected_emp, EMPLOYERS_LIST_FILE)
+            selected_vac = select_vacancies_list(selected_emp, selected_vacancies)
+
             database_config_dict = connector(CONNECTION_FILE)
             db_manager = DBManager(database_config_dict)  # создание класса для работы с БД PostgreSQL.
             # create_database - метод для создания экземпляра БД hh_vacancies.
