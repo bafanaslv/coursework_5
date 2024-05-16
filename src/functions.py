@@ -2,6 +2,15 @@
 # Результатом работы функции являетяеся список вакансий и список работодателей.
 
 from src.class_hh_api import HeadHunterAPI
+import configparser
+
+
+def connector(connection_file) -> dict:
+    """Функция предназанчена для считывания файла с параметрами подключения к БД возврата данных в виде словаря."""
+    config = configparser.ConfigParser()
+    config.read(connection_file)
+    database_config = dict(config.items('database'))
+    return database_config
 
 
 def read_vacancies_list(params, page_quantity, text_region, url) -> (list, list):
