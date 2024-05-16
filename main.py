@@ -3,16 +3,20 @@
 
 from src.functions import read_vacancies_list
 from src.functions import select_vacancies_list
+from src.functions import save_list_file
 from src.class_db_manager import DBManager
 from config import ROOT_DIR
 from src.functions import connector
+import os.path
 
 CONNECTION_FILE = ROOT_DIR+'/database.ini'  # конфигурационный файл для подключения к БД
-URL_GET = "https://api.hh.ru/vacancies"  # адрес Head Hanter для отправки запроса
+EMPLOYERS_LIST_FILE = ROOT_DIR+'/data/employer_list_file.txt'  # файл с списком выбранных работодателей
+URL_GET = "https://api.hh.ru/vacancies"  # адрес HeadHanter для отправки запроса
 
 
 def users_menu():
     # vacancy_text - текст запроса на HeadHanter
+    os.path.isfile(EMPLOYERS_LIST_FILE)
     vacancy_text = input(f'Введите поисковый запрос:\n')
     if len(vacancy_text) > 0:
         # параметры запроса
@@ -21,21 +25,18 @@ def users_menu():
         if not page_quantity.isdigit() or int(page_quantity) > 20:
             print('Неверный ввод - по умолчанию будет выбрана одна страница!')
             page_quantity = '1'
-        text_region = input(f'Введите наименование региона или нажмите <Enter> если поиск по всей России:\n')
-        if len(text_region) == 0:
-            print('Регион не введен - поиск будет осуществляться по всей России.')
 
         # read_vacancies_list - функция для формирования
         # списка работодателей selected_employers и вакансий selected_vacancies
-        selected_employers, selected_vacancies = read_vacancies_list(params, int(page_quantity), text_region, URL_GET)
+        selected_employers, selected_vacancies = read_vacancies_list(params, int(page_quantity), URL_GET)
 
         if len(selected_vacancies) > 0:
             # функция select_vacancies_list предназначена для получения списка 10-ти организаций с наибольшим
             # количеством вакансий и списка самих вакансий по этим организациям.
             selected_emp, selected_vac = select_vacancies_list(selected_employers, selected_vacancies)
             # функция connector считывает файл с параметрами подключения к БД возвращает данные в виде словаря.
+            save_list_file(selected_emp, EMPLOYERS_LIST_FILE)
             database_config_dict = connector(CONNECTION_FILE)
-
             db_manager = DBManager(database_config_dict)  # создание класса для работы с БД PostgreSQL.
             # create_database - метод для создания экземпляра БД hh_vacancies.
             # connect_database - метод для подключения к БД hh_vacancies.
@@ -51,7 +52,7 @@ def users_menu():
                 pass
             else:
                 while True:
-                    print("1.Получить список компаний с наибольшим количеством вакансий\n"
+                    print("1.Получить список компаний и количество вакансий у каждой компании\n"
                           "2.Получить список всех вакансий с указанием названия компании, "
                           "названия вакансии и зарплаты и ссылки на ваканси\n"
                           "3.Получить среднюю зарплату по вакансиям\n"
