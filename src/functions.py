@@ -1,8 +1,14 @@
 # Данная функция предназначена постраничного получения вакансий hh_vacancies с HeadHanter.
 # Результатом работы функции являетяеся список вакансий и список работодателей.
 
+from src.class_db_manager import DBManager
 from src.class_hh_api import HeadHunterAPI
+from config import ROOT_DIR
 import configparser
+import csv
+import pickle
+
+CONNECTION_FILE = ROOT_DIR+'/database.ini'  # конфигурационный файл для подключения к БД
 
 
 def connector(connection_file) -> dict:
@@ -158,7 +164,56 @@ def salary_valid(salary_item) -> (int, int, str):
 
 
 def save_list_file(selected_employers_list, employer_list_file):
-    """Запись списка txt-файл."""
-    with open(employer_list_file, 'w', encoding="UTF-8") as file:
-        for item in selected_employers_list:
-            file.write("%s\n" % item)
+    """Запись списка csv-файл."""
+    with open(employer_list_file, 'wb') as file:
+        for sel in selected_employers_list:
+            pickle.dump(sel, file)
+
+
+def database_manager(selected_emp_10, selected_vac):
+    database_config_dict = connector(CONNECTION_FILE)
+    db_manager = DBManager(database_config_dict)  # создание класса для работы с БД PostgreSQL.
+    # create_database - метод для создания экземпляра БД hh_vacancies.
+    # connect_database - метод для подключения к БД hh_vacancies.
+    # create_tables - метод для создания таблиц БД (employers - работодатели, vacancies - вакансии).
+    if not db_manager.create_database():
+        # выведется ошибка создания пустой БД
+        pass
+    elif not db_manager.connect_database():
+        # выведется ошибка подключения к вновь созданной БД
+        pass
+    elif not db_manager.create_tables(selected_emp_10, selected_vac):
+        # выведется ошибка создание таблиц БД
+        pass
+    else:
+        while True:
+            print("1.Получить список компаний и количество вакансий у каждой компании\n"
+                  "2.Получить список всех вакансий с указанием названия компании, "
+                  "названия вакансии и зарплаты и ссылки на ваканси\n"
+                  "3.Получить среднюю зарплату по вакансиям\n"
+                  "4.Получить список всех вакансий, у которых зарплата выше средней по всем вакансиям\n"
+                  "5.Получить список всех вакансий, в названии которых содержатся переданные в метод слова\n"
+                  "0.Завершение работы программы\n")
+            answer = input("Ввеедите номер запроса:")  # ввод номера пункта меню
+            if answer == '1':
+                db_manager.get_companies_and_vacancies_count()
+                print("")
+            elif answer == '2':
+                db_manager.get_all_vacancies()
+                print("")
+            elif answer == '3':
+                db_manager.get_avg_salary()
+                print("")
+            elif answer == '4':
+                db_manager.get_vacancies_with_higher_salary()
+                print("")
+            elif answer == '5':
+                keywords = input("Введите ключевые слова в названии вакансии через запятую:\n")
+                if len(keywords) > 0:
+                    db_manager.get_vacancies_with_keyword(keywords)
+                    print("")
+                else:
+                    print("Ключевые слова не введены - программа завершает работу !")
+            else:
+                break
+    db_manager.close_database()
