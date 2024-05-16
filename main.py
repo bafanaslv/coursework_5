@@ -2,7 +2,7 @@
 # и вывода меню запросов к БД
 
 from src.functions import read_vacancies_list
-from src.functions import select_vacancies_list
+from src.functions import read_employers_list
 from src.functions import save_list_file
 from src.class_db_manager import DBManager
 from config import ROOT_DIR
@@ -28,15 +28,14 @@ def users_menu():
 
         # read_vacancies_list - функция для формирования
         # списка работодателей selected_employers и вакансий selected_vacancies
-        selected_employers, selected_vacancies = read_vacancies_list(params, int(page_quantity), URL_GET)
+        selected_employers = read_employers_list(params, int(page_quantity), URL_GET)
 
-        if len(selected_vacancies) > 0:
+        if len(selected_employers) > 0:
             # функция select_employers_list предназначена для получения списка 10-ти организаций с наибольшей зарплатой.
             # функция connector считывает файл с параметрами подключения к БД возвращает данные в виде словаря.
             selected_emp = sorted(selected_employers, key=lambda x: x[3], reverse=True)[0:10]
             save_list_file(selected_emp, EMPLOYERS_LIST_FILE)
-            selected_vac = select_vacancies_list(selected_emp, selected_vacancies)
-
+            selected_vac = read_vacancies_list(params, int(page_quantity), selected_emp, URL_GET)
             database_config_dict = connector(CONNECTION_FILE)
             db_manager = DBManager(database_config_dict)  # создание класса для работы с БД PostgreSQL.
             # create_database - метод для создания экземпляра БД hh_vacancies.

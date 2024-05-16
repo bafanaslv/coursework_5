@@ -13,12 +13,11 @@ def connector(connection_file) -> dict:
     return database_config
 
 
-def read_vacancies_list(params, page_quantity, url) -> (list, list):
+def read_employers_list(params, page_quantity, url) -> list:
     """Функция предназначена для работы с API ресурсом HeadHater для получения вакансий."""
     hh_api = HeadHunterAPI()  # создание экземпляра поискового класса HeadHanter
     # Получение вакансий с hh.ru в формате JSON.
     employers_list = []  # список работодателей
-    vacancies_list = []  # список вакансий
     page = 0  # номер страницы HeadHanter
 
     while page < page_quantity:
@@ -27,15 +26,15 @@ def read_vacancies_list(params, page_quantity, url) -> (list, list):
         if hh_api.get_status_code() == 200:  # если запрос прошел удачно, то идем дальше.
             # Из полученного в json-формате списка hh_vacancies получаем
             # список вакансий и список работодателей помощью функци create_vacancy_lists.
-            employers_list, vacancies_list = create_vacancy_lists(hh_vacancies, employers_list, vacancies_list)
+            employers_list = create_employer_lists(hh_vacancies, employers_list)
             page += 1
         else:
             print(f'Ответ: {hh_api.get_status_code()} - не удалось получить доступ к ресурсу HeadHater.')
             break
-    return employers_list, vacancies_list
+    return employers_list
 
 
-def create_vacancy_lists(hh_vacancies, employers_list, vacancies_list) -> (list, list):
+def create_employer_lists(hh_vacancies, employers_list) -> list:
     """Функция для создания списка вакансий и списка работодателей из списка словарей hh_vacancies,
      полученных с HeadHanter. В спиской работодателей попадают попадают только уникальные,то есть отстуствуют
      повторы. Параллельно при заполнении списка работодателей подсчитывется количество вакансий каждого работодателя.
@@ -68,18 +67,57 @@ def create_vacancy_lists(hh_vacancies, employers_list, vacancies_list) -> (list,
                     employers_list.append([vacancy['employer']['id'],
                                            vacancy['employer']['name'], vacancy['alternate_url'], salary])
 
+        return employers_list
+    else:
+        print('Ошибочный формат файла.')
+
+
+def read_vacancies_list(params, page_quantity, selected_employers, url) -> list:
+    """Функция предназначена для работы с API ресурсом HeadHater для получения вакансий."""
+    hh_api = HeadHunterAPI()  # создание экземпляра поискового класса HeadHanter
+    # Получение вакансий с hh.ru в формате JSON.
+    vacancies_list = []  # список вакансий
+    page = 0  # номер страницы HeadHanter
+
+    while page < page_quantity:
+        params["page"] = page
+        hh_vacancies = hh_api.get_vacancies(url, params)
+        if hh_api.get_status_code() == 200:  # если запрос прошел удачно, то идем дальше.
+            # Из полученного в json-формате списка hh_vacancies получаем
+            # список вакансий и список работодателей помощью функци create_vacancy_lists.
+            vacancies_list = create_vacancy_lists(hh_vacancies, selected_employers, vacancies_list)
+            page += 1
+        else:
+            print(f'Ответ: {hh_api.get_status_code()} - не удалось получить доступ к ресурсу HeadHater.')
+            break
+    return vacancies_list
+
+
+def create_vacancy_lists(hh_vacancies, employers_list, vacancies_list) -> list:
+    """Функция для создания списка вакансий и списка работодателей из списка словарей hh_vacancies,
+     полученных с HeadHanter. В спиской работодателей попадают попадают только уникальные,то есть отстуствуют
+     повторы. Параллельно при заполнении списка работодателей подсчитывется количество вакансий каждого работодателя.
+     Это поле нужно для сортировки, чтобы затем выбрать 10 работодателей с наибольшим количеством вакансий."""
+    if isinstance(hh_vacancies, dict):
+        for vacancy in hh_vacancies["items"]:
+            # пропускаем если отсутствует идентификатор работодателя
+            if "id" not in vacancy["employer"]:
+                continue
             # валидация зарплаты salary_valid и должностных обязанностей responsibility_valid
-            responsibility = responsibility_valid(vacancy['snippet'])
-            vacancies_list.append([vacancy["id"],
-                                   vacancy["name"],
-                                   vacancy['area']['name'],
-                                   vacancy['snippet']['requirement'],
-                                   responsibility,
-                                   salary_min,
-                                   salary_max,
-                                   currency,
-                                   vacancy['employer']['id']])
-        return employers_list, vacancies_list
+            for sel in employers_list:
+                if vacancy['employer']['id'] == sel[0]:
+                    salary_min, salary_max, currency = salary_valid(vacancy['salary'])
+                    responsibility = responsibility_valid(vacancy['snippet'])
+                    vacancies_list.append([vacancy["id"],
+                                           vacancy["name"],
+                                           vacancy['area']['name'],
+                                           vacancy['snippet']['requirement'],
+                                           responsibility,
+                                           salary_min,
+                                           salary_max,
+                                           currency,
+                                           vacancy['employer']['id']])
+        return vacancies_list
     else:
         print('Ошибочный формат файла.')
 
@@ -119,19 +157,7 @@ def salary_valid(salary_item) -> (int, int, str):
     return salary_min, salary_max, currency
 
 
-def select_vacancies_list(employers_list, vacancies_list):
-    """Функция сортирует список работодателей по убыванию максимальной заплаты и берет десять первых и формирует
-    новый список selected_employers_list. Далее из списка ваканасий создается новый список вакансий
-    selected_employers_list по соответствию ID вакансий в двух списках vac[8] == sel[0]."""
-    for vac in vacancies_list:
-        for sel in selected_employers_list:
-            if vac[8] == sel[0]:
-                selected_vacancies_list.append(vac)
-    return selected_employers_list, selected_vacancies_list
-
-
 def save_list_file(selected_employers_list, employer_list_file):
-    print(employer_list_file)
     """Запись списка txt-файл."""
     with open(employer_list_file, 'w', encoding="UTF-8") as file:
         for item in selected_employers_list:
