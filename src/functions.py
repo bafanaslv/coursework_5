@@ -3,21 +3,15 @@
 
 from src.class_hh_api import HeadHunterAPI
 import configparser
-import psycopg2
 
-def connector(connection_file):
-    """Коннектор для соединения с БД. при вызове можно передать другие аргументы"""
+
+def connector(connection_file) -> dict:
+    """Функция предназанчена для считывания файла с параметрами подключения к БД возврата данных в виде словаря."""
     config = configparser.ConfigParser()
     config.read(connection_file)
     database_config = dict(config.items('database'))
-    connection = psycopg2.connect(
-        host=database_config['host'],
-        database=database_config['database'],
-        user=database_config['user'],
-        password=database_config['password']
-    )
-    print((connection))
-    return connection
+    return database_config
+
 
 def read_vacancies_list(params, page_quantity, text_region, url) -> (list, list):
     """Функция предназначена для работы с API ресурсом HeadHater для получения вакансий."""
