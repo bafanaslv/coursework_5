@@ -1,5 +1,5 @@
-# Модуль запуска программы для ввода параметров подключения к БД, ввода количества страниц данных для поиска на HeadHanter
-# и вывода меню запросов к БД.
+# Модуль запуска программы для ввода параметров подключения к БД, ввода количества страниц данных для поиска
+# на HeadHanter и поисковых параметров для запроса к БД.
 
 from src.functions import read_vacancies_list
 from src.functions import read_employers_list
@@ -12,6 +12,7 @@ import os.path
 EMPLOYERS_FILE = ROOT_DIR+'/data/employer_file.json'  # файл с списком выбранных работодателей
 URL_GET = "https://api.hh.ru/vacancies"  # адрес HeadHanter для отправки запроса
 SEARCH_WORD = "oracle"  # поисковое слово для запроса на HeadHanter
+COUNT_EMPLOYERS = 10  # количество интересующих работодателей
 
 def users_menu():
     page_quantity = input(f'Введите количество страниц (не более 20):\n')
@@ -24,7 +25,7 @@ def users_menu():
         # read_employers_list - функция для формирования списка работодателей selected_employers
         selected_employers = read_employers_list(params, int(page_quantity), URL_GET)
         if len(selected_employers) > 0:
-            selected_emp_10 = sorted(selected_employers, key=lambda x: x[3], reverse=True)[0:10]
+            selected_emp_10 = sorted(selected_employers, key=lambda x: x[3], reverse=True)[0:COUNT_EMPLOYERS]
             save_json_file(selected_emp_10, EMPLOYERS_FILE)
             selected_vac = read_vacancies_list(params, int(page_quantity), selected_emp_10, URL_GET)
             database_manager(selected_emp_10, selected_vac)
