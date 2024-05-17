@@ -5,8 +5,7 @@ from src.class_db_manager import DBManager
 from src.class_hh_api import HeadHunterAPI
 from config import ROOT_DIR
 import configparser
-import csv
-import pickle
+import json
 
 CONNECTION_FILE = ROOT_DIR+'/database.ini'  # конфигурационный файл для подключения к БД
 
@@ -163,11 +162,28 @@ def salary_valid(salary_item) -> (int, int, str):
     return salary_min, salary_max, currency
 
 
-def save_list_file(selected_employers_list, employer_list_file):
-    """Запись списка csv-файл."""
-    with open(employer_list_file, 'wb') as file:
-        for sel in selected_employers_list:
-            pickle.dump(sel, file)
+def save_json_file(selected_emp_10, json_file):
+    """Запись в json-файл."""
+    employers_dict_list = []
+    for sel in selected_emp_10:
+        employer_dict = {"id": sel[0],
+                         "name": sel[1],
+                         "employer_url": sel[2]}
+        employers_dict_list.append(employer_dict)
+    with open(json_file, 'w', encoding="UTF-8") as file:
+        employers_json = json.dumps(employers_dict_list, ensure_ascii=False, indent=4)
+        file.write(employers_json)
+
+
+def load_json_file(json_file) -> list:
+    """Загрузка json-файла."""
+    selected_emp_10 = []
+    with open(json_file, 'r', encoding='utf-8') as file:
+        employers_dict = json.load(file)
+    for dict in employers_dict:
+        list = [dict["id"], dict["name"], dict["employer_url"]]
+        selected_emp_10.append(list)
+    return selected_emp_10
 
 
 def database_manager(selected_emp_10, selected_vac):
