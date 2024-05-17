@@ -10,7 +10,7 @@ from config import ROOT_DIR
 import configparser
 import os
 
-EMPLOYERS_FILE = ROOT_DIR+'/data/employers_file.json'  # файл с списком выбранных работодателей.
+EMPLOYERS_FILE = ROOT_DIR+'/employers_file.json'  # файл с списком выбранных работодателей.
 URL_GET = "https://api.hh.ru/vacancies"  # адрес HeadHanter для отправки запроса.
 SEARCH_WORD = "oracle"  # поисковое слово для запроса на HeadHanter.
 COUNT_EMPLOYERS = 10  # количество интересующих работодателей.
