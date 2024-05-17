@@ -31,12 +31,13 @@ def users_menu():
     print(f'{search_config["employers_count"]} интересующих работодателей будут выбраны по ключевому слову '
           f'"{search_config["search_word"]}".')
     page_quantity = input(f'Введите количество страниц (не более 20):\n')
+    # параметры поиска на HeadHanter
+    params = {'text': SEARCH_WORD, 'area': '113', 'currency': 'RUR', 'per_page': 100, 'page': 0}
     if not page_quantity.isdigit() or int(page_quantity) > 20:
         print('Неверный ввод - по умолчанию будет выбраны 2 страницы!')
         page_quantity = '2'
     if not os.path.isfile(EMPLOYERS_FILE):
         # в случае отсуствия файла с работодателями он формируется по запросу к HeadHanter из вакансий.
-        params = {'text': SEARCH_WORD, 'area': '113', 'currency': 'RUR', 'per_page': 100, 'page': 0}
         # read_employers_list - функция для формирования списка работодателей selected_employers
         selected_employers = read_employers_lists(params, int(page_quantity), URL_GET)
         if len(selected_employers) > 0:
@@ -50,9 +51,6 @@ def users_menu():
         else:
             print('По запросу ничего не найдено!')
     else:
-        # функция select_employers_list предназначена для получения списка 10-ти организаций с наибольшей зарплатой.
-        # функция connector считывает файл с параметрами подключения к БД возвращает данные в виде словаря.
-        params = {'text': SEARCH_WORD, 'area': '113', 'currency': 'RUR', 'per_page': 100, 'page': 0}
         # в случае если json-файл с работодателями уже есть, то загружаем их из файла.
         selected_emp_10 = load_json_file(EMPLOYERS_FILE)
         # на базе загруженных работодателей формируем соовествующий им список вакансий.
