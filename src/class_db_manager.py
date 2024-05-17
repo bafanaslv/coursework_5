@@ -72,7 +72,7 @@ class DBManager(DataBaseManager):
                                 "currency char(5), employer_id int NOT NULL, "
                                 "FOREIGN KEY (employer_id) REFERENCES employers(employer_id))")
             for data in selected_emp:
-                data_ins = data[0:3]  # отсекаем технологическое поле для сортировки списка.
+                data_ins = data[0:3]  # отсекаем технологическое поле зарплаты предназачавшегося для сортировки списка.
                 self.cursor.execute(
                     "INSERT INTO employers (employer_id, name, alternate_url) "
                     "VALUES (%s, %s, %s) returning *", data_ins)
